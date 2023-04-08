@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(ORB_SLAM2_PYTHON_BINDING)
+project(ORB_SLAM3_PYTHON_BINDING)
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release)
@@ -9,8 +9,8 @@ MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3 -march=native")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -L/usr/local/lib -Wl,--no-undefined -O3 -march=native ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -L/usr/local/lib -Wl,--no-undefined  -O3 -march=native")
 
 # Check C++11 or C++0x support
 include(CheckCXXCompilerFlag)
@@ -34,13 +34,13 @@ find_package(NumPy)
 find_package(Boost)
 
 if (Boost_MINOR_VERSION EQUAL 65)
-  find_package(Boost REQUIRED COMPONENTS python-py36)
+  find_package(Boost REQUIRED COMPONENTS python-py36 numpy3)
 else()
-  find_package(Boost REQUIRED COMPONENTS python38)
+  find_package(Boost REQUIRED COMPONENTS python38 numpy3)
 endif()
 
 find_package(OpenCV REQUIRED)
-find_package(ORB_SLAM2 REQUIRED)
+find_package(ORB_SLAM3 REQUIRED)
 find_package(Pangolin)
 
 # RPATH fiddling for the library, so that the installed version can find the linked libraries
@@ -48,9 +48,11 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include_directories(
 ${PROJECT_SOURCE_DIR}/src
-${ORB_SLAM2_INCLUDE_DIR}
-${Boost_INCLUDE_DIRS}
+${ORB_SLAM3_INCLUDE_DIR}
+${ORB_SLAM3_INCLUDE_DIR}/ORB_SLAM3/CameraModels
+${ORB_SLAM3_INCLUDE_DIR}/ORB_SLAM3
 ${PYTHON_INCLUDE_DIRS}
+${Boost_INCLUDE_DIRS}
 ${PYTHON_NUMPY_INCLUDE_DIR}
 )
 if (Pangolin_FOUND)
@@ -60,7 +62,7 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
-set(TARGET_MODULE_NAME orbslam2)
+set(TARGET_MODULE_NAME orbslam3)
 add_library(${TARGET_MODULE_NAME} SHARED
 src/ORBSlamPython.cpp
 src/pyboost_cv2_converter.cpp
@@ -68,7 +70,7 @@ src/pyboost_cv3_converter.cpp)
 set_target_properties(${TARGET_MODULE_NAME} PROPERTIES PREFIX "")
 
 target_link_libraries(${TARGET_MODULE_NAME}
-${ORB_SLAM2_LIBRARIES}
+${ORB_SLAM3_LIBRARIES}
 ${OpenCV_LIBS}
 ${Boost_LIBRARIES}
 ${PYTHON_LIBRARIES}

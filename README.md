@@ -1,3 +1,8 @@
+# ORB_SLAM3-PythonBindings
+
+A python wrapper for ORB_SLAM3, which can be found at [ORB_SLAM3](https://github.com/GiordanoLaminetti/ORB_SLAM3).
+This is designed to work with the base version of ORB_SLAM3, with a couple of minimal API changes to access the system output.
+
 # Changes from Original Version of ORB_SLAM2-PythonBindings
 
 ## add method for retrieve the intrinsic parameter of camera
@@ -21,29 +26,22 @@
 
 ## add python 3.8 Support
 
-# ORB_SLAM2-PythonBindings
-
-A python wrapper for ORB_SLAM2, which can be found at [https://github.com/raulmur/ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2).
-This is designed to work with the base version of ORB_SLAM2, with a couple of minimal API changes to access the system output.
 It has been tested on ubuntu 14.04 and 16.04 and built against Python3, although it does not rely on any python3 features.
 
 ## Installation
 
 ### Prerequesities
 
-- ORBSLAM2 source code
-- ORBSLAM2 compiliation dependencies (Pangolin, Eigen, OpenCV)
-- Boost, specifically its python component (python38)
+- ORBSLAM3 source code
+- ORBSLAM3 compiliation dependencies (Pangolin, Eigen, OpenCV)
+- Boost, specifically its python component (python-35)
 - Numpy development headers (to represent images in python, automatically converted to cv::Mat)
 
 ### Setup
-
-#### Modifying ORBSLAM2
-
-First, we need an additional API method from ORBSLAM to extract completed trajectories.
-Apply the patch file "orbslam-changes.diff" to the ORBSLAM2 source, which should create an additional method and add some installation instructions to the end of CMakeLists.txt.
-Build orbslam as normal, and then run `make install`. This will install the ORBSLAM2 headers and .so to /usr/local
-(if an alternative installation directory is desired, specify it to cmake using `-DCMAKE_INSTALL_PREFIX=/your/desired/location`).
+## clone the repo
+```
+git clone -b ORBSLAM3 https://github.com/GiordanoLaminetti/ORB_SLAM2-PythonBindings.git
+```
 
 #### Compilation
 
@@ -65,14 +63,14 @@ Verify your installation by typing
 
 ```
 python3
->>> import orbslam2
+>>> import orbslam3
 ```
 
 And there should be no errors.
 
 #### Examples
 
-ORBSLAM2's examples have been re-implemented in python in the examples folder.
+ORBSLAM3's examples have been re-implemented in python in the examples folder.
 Run them with the same parameters as the ORBSLAM examples, i.e.:
 
 ```
@@ -86,6 +84,6 @@ You will also need to change the install location on line 73 of CMakeLists.txt t
 
 ## License
 
-This code is licensed under the BSD Simplified license, although it requires and links to ORB_SLAM2, which is available under the GPLv3 license
+This code is licensed under the BSD Simplified license, although it requires and links to ORB_SLAM3, which is available under the GPLv3 license
 
 It uses pyboostcvconverter (https://github.com/Algomorph/pyboostcvconverter) by Gregory Kramida under the MIT licence (see pyboostcvconverter-LICENSE).
