@@ -2,6 +2,30 @@
 
 A python wrapper for ORB_SLAM3, which can be found at [ORB_SLAM3](https://github.com/GiordanoLaminetti/ORB_SLAM3).
 This is designed to work with the base version of ORB_SLAM3, with a couple of minimal API changes to access the system output.
+
+# Changes from Original Version of ORB_SLAM2-PythonBindings
+
+## add method for retrieve the intrinsic parameter of camera
+
+```
+    get_camera_matrix //return a numpy array with the camera matrix
+    get_dist_coef //return a tuple with the distortion coefficient
+```
+
+## add method for retrieve the pose of the frame wrt initial frame
+
+```
+    get_frame_pose //return a numpy array with the pose
+```
+
+## add method for retrieve the keypoint in the frame and it's world position
+
+```
+    get_current_points //return a list with a tuple pair ((world position),(2d keypoints))
+```
+
+## add python 3.8 Support
+
 It has been tested on ubuntu 14.04 and 16.04 and built against Python3, although it does not rely on any python3 features.
 
 ## Installation
@@ -18,6 +42,7 @@ It has been tested on ubuntu 14.04 and 16.04 and built against Python3, although
 ```
 git clone -b ORBSLAM3 https://github.com/GiordanoLaminetti/ORB_SLAM2-PythonBindings.git
 ```
+
 #### Compilation
 
 Return to the ORBSLAM-Python source, build and install it by running
