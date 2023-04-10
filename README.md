@@ -1,9 +1,11 @@
 # ORB_SLAM3-PythonBindings
 
-A python wrapper for ORB_SLAM3, which can be found at [ORB_SLAM3](https://github.com/GiordanoLaminetti/ORB_SLAM3).
+A python wrapper for ORB_SLAM3, which can be found at [ORB_SLAM3](https://github.com/bjr12l/ORB_SLAM3).
 This is designed to work with the base version of ORB_SLAM3, with a couple of minimal API changes to access the system output.
 
 # Changes from Original Version of ORB_SLAM2-PythonBindings
+
+## VLAD: not sure those are applicable... but keeping in for information:
 
 ## add method for retrieve the intrinsic parameter of camera
 
@@ -37,10 +39,13 @@ It has been tested on ubuntu 14.04 and 16.04 and built against Python3, although
 - Boost, specifically its python component (python-35)
 - Numpy development headers (to represent images in python, automatically converted to cv::Mat)
 
+You can get a base image with all of the above by running `docker compose up dev` from [ORB_SLAM3 repo](https://github.com/bjr12l/ORB_SLAM3)
+which will build the `orb-slam3:dev` image. This image is also used as part of the Dockerfile for this project.
+
 ### Setup
 ## clone the repo
 ```
-git clone -b ORBSLAM3 https://github.com/GiordanoLaminetti/ORB_SLAM2-PythonBindings.git
+git clone -b ORBSLAM3 https://github.com/bjr12l/ORB_SLAM3.git
 ```
 
 #### Compilation
