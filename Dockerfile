@@ -16,7 +16,7 @@ RUN cd /opt && \
     cp -r boost /usr/local/include/ && \
     cp -r stage/lib/* /usr/local/lib/
 
-COPY . /opt/ORB_SLAM3-PythonBindings
+COPY . /opt/ORB_SLAM3-PythonBinding
 
 # RUN echo "Getting ORB-SLAM3 PythonBindings installation ready ..." && \
 # 	cd /opt/ORB_SLAM3-PythonBindings/ && \
