@@ -67,7 +67,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(TARGET_MODULE_NAME orbslam3)
 add_library(${TARGET_MODULE_NAME} SHARED
 src/ORBSlamPython.cpp
-src/pyboost_cv4_converter.cpp)
+src/pyboost_cv4_converter.cpp
+src/SophusToCvMat.cpp
+)
 set_target_properties(${TARGET_MODULE_NAME} PROPERTIES PREFIX "")
 
 target_link_libraries(${TARGET_MODULE_NAME}

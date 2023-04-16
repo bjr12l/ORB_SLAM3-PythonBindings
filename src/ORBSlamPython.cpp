@@ -1,10 +1,13 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pbcvt_ARRAY_API
 #include <opencv2/core/core.hpp>
+#include <sophus/se3.hpp>
+#include <opencv2/core/eigen.hpp>
 #include <pyboostcvconverter/pyboostcvconverter.hpp>
 #include <ORB_SLAM3/KeyFrame.h>
 #include <ORB_SLAM3/Converter.h>
 #include <ORB_SLAM3/Tracking.h>
 #include <ORB_SLAM3/MapPoint.h>
+#include "SophusToCvMat.h"
 #include "ORBSlamPython.h"
 #if PY_VERSION_HEX >= 0x03000000
 #define NUMPY_IMPORT_ARRAY_RETVAL NULL
@@ -151,7 +154,8 @@ bool ORBSlamPython::processMono(cv::Mat image, double timestamp, std::string ima
     }
     if (image.data)
     {
-        cv::Mat pose = system->TrackMonocular(image, timestamp, vector<ORB_SLAM3::IMU::Point>(), imageFile);
+        Sophus::SE3f se3_pose = system->TrackMonocular(image, timestamp, vector<ORB_SLAM3::IMU::Point>(), imageFile);
+        cv::Mat pose = se3fToCvMat(se3_pose);
         return !pose.empty();
     }
     else
@@ -184,7 +188,8 @@ bool ORBSlamPython::processImuMono(cv::Mat image, double timestamp, std::string 
     if (image.data)
     {
         vector<ORB_SLAM3::IMU::Point> vImuMeas = convertImuFromNDArray(imu);
-        cv::Mat pose = system->TrackMonocular(image, timestamp, vImuMeas);
+        Sophus::SE3f se3_pose = system->TrackMonocular(image, timestamp, vImuMeas);
+        cv::Mat pose = se3fToCvMat(se3_pose);
         return !pose.empty();
     }
     else
@@ -217,7 +222,8 @@ bool ORBSlamPython::processStereo(cv::Mat leftImage, cv::Mat rightImage, double 
     }
     if (leftImage.data && rightImage.data)
     {
-        cv::Mat pose = system->TrackStereo(leftImage, rightImage, timestamp);
+        Sophus::SE3f se3_pose = system->TrackStereo(leftImage, rightImage, timestamp);
+        cv::Mat pose = se3fToCvMat(se3_pose);
         return !pose.empty();
     }
     else
@@ -251,7 +257,8 @@ bool ORBSlamPython::processImuStereo(cv::Mat leftImage, cv::Mat rightImage, doub
     if (leftImage.data && rightImage.data)
     {
         vector<ORB_SLAM3::IMU::Point> vImuMeas = convertImuFromNDArray(imu);
-        cv::Mat pose = system->TrackStereo(leftImage, rightImage, timestamp, vImuMeas);
+        Sophus::SE3f se3_pose = system->TrackStereo(leftImage, rightImage, timestamp, vImuMeas);
+        cv::Mat pose = se3fToCvMat(se3_pose);
         return !pose.empty();
     }
     else
@@ -283,7 +290,8 @@ bool ORBSlamPython::processRGBD(cv::Mat image, cv::Mat depthImage, double timest
     }
     if (image.data && depthImage.data)
     {
-        cv::Mat pose = system->TrackRGBD(image, depthImage, timestamp);
+        Sophus::SE3f se3_pose = system->TrackRGBD(image, depthImage, timestamp);
+        cv::Mat pose = se3fToCvMat(se3_pose);
         return !pose.empty();
     }
     else
@@ -390,8 +398,14 @@ boost::python::list ORBSlamPython::getKeyframePoints() const
         if (pKF->isBad())
             continue;
 
-        cv::Mat R = pKF->GetRotation().t();
-        cv::Mat t = pKF->GetCameraCenter();
+        Eigen::Matrix3f R_eigen = pKF->GetRotation().transpose();
+        cv::Mat R;
+        cv::eigen2cv(R_eigen, R);
+
+        Eigen::Vector3f t_eigen = pKF->GetCameraCenter();
+        cv::Mat t;
+        cv::eigen2cv(t_eigen, t);
+
         PyObject *Rarr = pbcvt::fromMatToNDArray(R);
         PyObject *Tarr = pbcvt::fromMatToNDArray(t);
         trajectory.append(boost::python::make_tuple(
@@ -417,8 +431,11 @@ boost::python::list ORBSlamPython::getTrackedMappoints() const
     for (size_t i = 0; i < Mps.size(); i++)
     {
         if (Mps[i] != NULL)
-        {
-            cv::Mat wp = Mps[i]->GetWorldPos();
+        {   
+            Eigen::Vector3f wp_eigen = Mps[i]->GetWorldPos();
+            cv::Mat wp;
+            cv::eigen2cv(wp_eigen, wp);
+
             map_points.append(boost::python::make_tuple(
                 wp.at<float>(0, 0),
                 wp.at<float>(1, 0),
@@ -450,8 +467,11 @@ boost::python::list ORBSlamPython::getCurrentPoints() const
         {
             ORB_SLAM3::MapPoint *pMP = pTracker->mCurrentFrame.mvpMapPoints[i];
             if (pMP && !pTracker->mCurrentFrame.mvbOutlier[i] && pMP->Observations() > 0)
-            {
-                cv::Mat wp = pMP->GetWorldPos();
+            {   
+                Eigen::Vector3f wp_eigen = pMP->GetWorldPos();
+                cv::Mat wp;
+                cv::eigen2cv(wp_eigen, wp);
+
                 map_points.append(boost::python::make_tuple(
                     boost::python::make_tuple(
                         wp.at<float>(0, 0),
@@ -473,7 +493,8 @@ PyObject *ORBSlamPython::getFramePose() const
     {
 
         ORB_SLAM3::Tracking *pTracker = system->GetTracker();
-        cv::Mat pose = pTracker->mCurrentFrame.mTcw;
+        Sophus::SE3f se3_pose = pTracker->mCurrentFrame.GetPose();
+        cv::Mat pose = se3fToCvMat(se3_pose);
         if (pose.rows * pose.cols > 0)
         {
             return pbcvt::fromMatToNDArray(pose);
@@ -527,7 +548,8 @@ boost::python::list ORBSlamPython::getTrajectoryPoints() const
     cv::Mat Two = cv::Mat::eye(4, 4, CV_32F);
     if (vpKFs.size() > 0)
     {
-        cv::Mat Two = vpKFs[0]->GetPoseInverse();
+        Sophus::SE3f se3_Two = vpKFs[0]->GetPoseInverse();
+        cv::Mat Two = se3fToCvMat(se3_Two);
     }
 
     boost::python::list trajectory;
@@ -538,10 +560,18 @@ boost::python::list ORBSlamPython::getTrajectoryPoints() const
 
     // For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
     // which is true when tracking failed (lbL).
-    std::list<ORB_SLAM3::KeyFrame *>::iterator lRit = system->GetTracker()->mlpReferences.begin();
-    std::list<double>::iterator lT = system->GetTracker()->mlFrameTimes.begin();
-    for (std::list<cv::Mat>::iterator lit = system->GetTracker()->mlRelativeFramePoses.begin(), lend = system->GetTracker()->mlRelativeFramePoses.end(); lit != lend; lit++, lRit++, lT++)
-    {
+    std::list<ORB_SLAM3::KeyFrame*> lReferences = system->GetTracker()->mlpReferences;
+    std::list<double> lFrameTimes = system->GetTracker()->mlFrameTimes;
+    std::list<Sophus::SE3<float>> se3Poses = system->GetTracker()->mlRelativeFramePoses;
+
+    std::list<cv::Mat> relativeFramePoses;
+    for (const auto& se3Pose : se3Poses) {
+        relativeFramePoses.push_back(se3fToCvMat(se3Pose));
+    }
+
+    auto lRit = lReferences.begin();
+    auto lT = lFrameTimes.begin();
+    for (auto lit = relativeFramePoses.begin(), lend = relativeFramePoses.end(); lit != lend; lit++, lRit++, lT++) {
         ORB_SLAM3::KeyFrame *pKF = *lRit;
 
         cv::Mat Trw = cv::Mat::eye(4, 4, CV_32F);
@@ -551,7 +581,7 @@ boost::python::list ORBSlamPython::getTrajectoryPoints() const
             ORB_SLAM3::KeyFrame *pKFParent;
 
             // std::cout << "bad parent" << std::endl;
-            Trw = Trw * pKF->mTcp;
+            Trw = Trw * se3fToCvMat(pKF->mTcp);
             pKFParent = pKF->GetParent();
             if (pKFParent == pKF)
             {
@@ -565,7 +595,7 @@ boost::python::list ORBSlamPython::getTrajectoryPoints() const
         }
         if (pKF != NULL && !pKF->isBad())
         {
-            Trw = Trw * pKF->GetPose() * Two;
+            Trw = Trw * se3fToCvMat(pKF->GetPose()) * Two;
 
             cv::Mat Tcw = (*lit) * Trw;
             //cv::Mat Rwc = Tcw.rowRange(0, 3).colRange(0, 3).t();
