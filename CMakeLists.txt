@@ -14,12 +14,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -L/usr/local/lib -Wl,--no-undefine
 
 # Check C++11 or C++0x support
 include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX11)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
    add_definitions(-DCOMPILEDWITHC11)
-   message(STATUS "Using flag -std=c++11.")
+   message(STATUS "Using flag -std=c++14.")
 elseif(COMPILER_SUPPORTS_CXX0X)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
    add_definitions(-DCOMPILEDWITHC0X)
@@ -34,13 +34,14 @@ find_package(NumPy)
 find_package(Boost)
 
 if (Boost_MINOR_VERSION EQUAL 65)
-  find_package(Boost REQUIRED COMPONENTS python-py36 numpy3)
+  find_package(Boost REQUIRED COMPONENTS python-py36)
 else()
-  find_package(Boost REQUIRED COMPONENTS python38 numpy3)
+  find_package(Boost REQUIRED COMPONENTS python38 numpy38)
 endif()
 
 find_package(OpenCV REQUIRED)
 find_package(ORB_SLAM3 REQUIRED)
+find_package(Sophus REQUIRED)
 find_package(Pangolin)
 
 # RPATH fiddling for the library, so that the installed version can find the linked libraries
@@ -51,6 +52,7 @@ ${PROJECT_SOURCE_DIR}/src
 ${ORB_SLAM3_INCLUDE_DIR}
 ${ORB_SLAM3_INCLUDE_DIR}/ORB_SLAM3/CameraModels
 ${ORB_SLAM3_INCLUDE_DIR}/ORB_SLAM3
+${Sophus_INCLUDE_DIRS}
 ${PYTHON_INCLUDE_DIRS}
 ${Boost_INCLUDE_DIRS}
 ${PYTHON_NUMPY_INCLUDE_DIR}
@@ -65,12 +67,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(TARGET_MODULE_NAME orbslam3)
 add_library(${TARGET_MODULE_NAME} SHARED
 src/ORBSlamPython.cpp
-src/pyboost_cv2_converter.cpp
-src/pyboost_cv3_converter.cpp)
+src/pyboost_cv4_converter.cpp
+src/SophusToCvMat.cpp
+)
 set_target_properties(${TARGET_MODULE_NAME} PROPERTIES PREFIX "")
 
 target_link_libraries(${TARGET_MODULE_NAME}
 ${ORB_SLAM3_LIBRARIES}
+${Sophus_LIBRARIES}
 ${OpenCV_LIBS}
 ${Boost_LIBRARIES}
 ${PYTHON_LIBRARIES}

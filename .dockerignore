@@ -1,0 +1,33 @@
+# Ignore all
+*
+
+# Unignore all with extensions
+!*.*
+
+# Unignore all dirs
+!*/
+
+**/lib/*
+**/build/*
+
+cmake_modules/
+cmake-build-debug/
+
+ExecMean.txt
+SessionInfo.txt
+Results_Euroc.txt
+LBA_Stats.txt
+LocalMapTimeStats.txt
+TrackLocalMapStats.txt
+TrackingTimeStats.txt
+time*
+Time*
+*.pyc
+*.osa
+.idea/
+my_settings.txt
+
+borrar/*
+
+data/*
+build/
