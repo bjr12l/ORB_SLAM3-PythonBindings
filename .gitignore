@@ -34,3 +34,5 @@
 
 # build folders
 build/
+data/
+EuRoC/

@@ -1,11 +1,8 @@
 FROM orb-slam3:dev
 
-RUN apt-get update && \
-	apt-get install -y software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get install -y python3.8 python3.8-dev python3-pip && \
-	python3.8 -m pip install Cython && \
-	python3.8 -m pip install numpy
+RUN apt update && apt install -y wget && \
+    apt install -y python3 python3-dev python3-pip && \
+	pip3 install Cython && pip3 install numpy pandas
 
 RUN cd /opt && \
     wget https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.gz && \
@@ -19,8 +16,8 @@ RUN cd /opt && \
 COPY . /opt/ORB_SLAM3-PythonBinding
 
 # RUN echo "Getting ORB-SLAM3 PythonBindings installation ready ..." && \
-# 	cd /opt/ORB_SLAM3-PythonBindings/ && \
-# 	mkdir build && cd bulid && \
+# 	cd /opt/ORB_SLAM3-PythonBinding/ && \
+# 	mkdir build && cd build && \
 # 	cmake -D PYTHON_EXECUTABLE=/usr/bin/python3.8 -D ORB_SLAM3_DIR=/usr .. && \
 # 	make -j$(nproc) &&\
 # 	make install
