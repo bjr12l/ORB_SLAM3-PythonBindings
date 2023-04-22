@@ -9,18 +9,4 @@ services:
     container_name: orb-slam3-python-dev
     volumes:
       - .:/opt/ORB_SLAM3-PythonBinding
-      # - /mnt/wslg:/mnt/wslg
-      # - /tmp/.X11-unix:/tmp/.X11-unix
-    # environment:
-    #   - DISPLAY=:0
-    #   - WAYLAND_DISPLAY=$WAYLAND_DISPLAY 
-    #   - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
-    #   - PULSE_SERVER=$PULSE_SERVER
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
     tty: true

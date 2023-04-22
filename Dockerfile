@@ -15,9 +15,9 @@ RUN cd /opt && \
 
 COPY . /opt/ORB_SLAM3-PythonBinding
 
-# RUN echo "Getting ORB-SLAM3 PythonBindings installation ready ..." && \
-# 	cd /opt/ORB_SLAM3-PythonBinding/ && \
-# 	mkdir build && cd build && \
-# 	cmake -D PYTHON_EXECUTABLE=/usr/bin/python3.8 -D ORB_SLAM3_DIR=/usr .. && \
-# 	make -j$(nproc) &&\
-# 	make install
+RUN echo "Getting ORB-SLAM3 PythonBindings installation ready ..." && \
+	cd /opt/ORB_SLAM3-PythonBinding/ && \
+	mkdir build && cd build && \
+	cmake -D PYTHON_EXECUTABLE=/usr/bin/python3.8 -D ORB_SLAM3_DIR=/usr .. && \
+	make -j$(nproc) &&\
+	make install
