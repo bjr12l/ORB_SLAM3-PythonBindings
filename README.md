@@ -3,89 +3,37 @@
 A python wrapper for ORB_SLAM3, which can be found at [ORB_SLAM3](https://github.com/bjr12l/ORB_SLAM3).
 This is designed to work with the base version of ORB_SLAM3, with a couple of minimal API changes to access the system output.
 
-# Changes from Original Version of ORB_SLAM2-PythonBindings
+## Add python 3.8 Support
 
-## VLAD: not sure those are applicable... but keeping in for information:
-
-## add method for retrieve the intrinsic parameter of camera
-
-```
-    get_camera_matrix //return a numpy array with the camera matrix
-    get_dist_coef //return a tuple with the distortion coefficient
-```
-
-## add method for retrieve the pose of the frame wrt initial frame
-
-```
-    get_frame_pose //return a numpy array with the pose
-```
-
-## add method for retrieve the keypoint in the frame and it's world position
-
-```
-    get_current_points //return a list with a tuple pair ((world position),(2d keypoints))
-```
-
-## add python 3.8 Support
-
-It has been tested on ubuntu 14.04 and 16.04 and built against Python3, although it does not rely on any python3 features.
+It has been tested on Ubuntu 20.04
 
 ## Installation
 
-### Prerequesities
+### Prerequesities:
+- Docker
 
-- ORBSLAM3 source code
-- ORBSLAM3 compiliation dependencies (Pangolin, Eigen, OpenCV)
-- Boost, specifically its python component (python-35)
-- Numpy development headers (to represent images in python, automatically converted to cv::Mat)
+### Docker:
+1. Build ORB_SLAM3 base image by running `docker compose build dev` from [ORB_SLAM3 repo](https://github.com/bjr12l/ORB_SLAM3)
+2. Build image here by running `docker compose build dev`
 
-You can get a base image with all of the above by running `docker compose up dev` from [ORB_SLAM3 repo](https://github.com/bjr12l/ORB_SLAM3)
-which will build the `orb-slam3:dev` image. This image is also used as part of the Dockerfile for this project.
+## Running:
+- You need to have vocabluary from the [ORB_SLAM3 repo](https://github.com/bjr12l/ORB_SLAM3)
+- And a configuration file with camera parameters. See [this for example](examples/k2/k2.yaml)
 
-### Setup
-## clone the repo
-```
-git clone -b ORBSLAM3 https://github.com/bjr12l/ORB_SLAM3.git
-```
 
-#### Compilation
+You can try with any of your own videos here is the key code:
+```python
+import orbslam3
 
-Return to the ORBSLAM-Python source, build and install it by running
+slam = orbslam3.System(path_to_vocab, path_to_config, orbslam3.Sensor.MONOCULAR)
+slam.set_use_viewer(True)
+slam.initialize()
 
-```
-mkdir build
-cd build
-cmake ..
-make
-make install
-```
-
-This will install the .so file to /usr/local/lib/python3.5/dist-packages, such that it should
-If you have changed the install location of ORBSLAM2, you need to indicate where it is installed using `-DORB_SLAM2_DIR=/your/desired/location`,
-which should be the same as the install prefix above (and contain 'include' and 'lib' folders).
-
-Verify your installation by typing
+ret, frame = vid.read()
+slam.process_image_mono(frame, vid.get(cv2.CAP_PROP_POS_MSEC) / 1000, "")
 
 ```
-python3
->>> import orbslam3
-```
 
-And there should be no errors.
-
-#### Examples
-
-ORBSLAM3's examples have been re-implemented in python in the examples folder.
-Run them with the same parameters as the ORBSLAM examples, i.e.:
-
-```
-python3 orbslam_mono_kitti.py [PATH_TO_ORBSLAM]/Vocabulary/ORBvoc.txt [PATH_TO_ORBSLAM]/Examples/Monocular/KITTI00-02.yaml [PATH_TO_KITTI]/sequences/00/
-```
-
-#### Alternative Python Versions
-
-At the moment, CMakeLists is hard-coded to use python 3.5. If you wish to use a different version, simply change the boost component used (python-35) to the desired version (say, python-27), on line 38 of CMakeLists.txt.
-You will also need to change the install location on line 73 of CMakeLists.txt to your desired dist/site packages directory.
 
 ## License
 
