@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os.path
-import orbslam2
+import orbslam3
 import time
 import cv2
 
@@ -11,7 +11,7 @@ def main(vocab_path, settings_path, path_to_image_folder, path_to_times_file):
     image_filenames, timestamps = load_images(path_to_image_folder, path_to_times_file)
     num_images = len(image_filenames)
 
-    slam = orbslam2.System(vocab_path, settings_path, orbslam2.Sensor.MONOCULAR)
+    slam = orbslam3.System(vocab_path, settings_path, orbslam3.Sensor.MONOCULAR)
     slam.set_use_viewer(True)
     slam.initialize()
 
@@ -29,7 +29,7 @@ def main(vocab_path, settings_path, path_to_image_folder, path_to_times_file):
             return 1
 
         t1 = time.time()
-        slam.process_image_mono(image, tframe)
+        slam.process_image_mono(image, tframe, image_filenames[idx])
         t2 = time.time()
 
         ttrack = t2 - t1
