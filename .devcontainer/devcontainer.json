@@ -41,7 +41,8 @@
 				"ms-vscode.cmake-tools",
 				"xaver.clang-format",
 				"eamodio.gitlens",
-				"ms-vscode.makefile-tools"
+				"ms-vscode.makefile-tools",
+				"ms-python.python"
 			]
 		}
 	}
