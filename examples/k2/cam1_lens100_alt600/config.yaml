@@ -6,4 +6,6 @@ csv_log_name: 2023-03-31 10-52-40.csv
 
 log_start: 0:0:311017
 video_start: 0:0:0
-offset: 2:30:0
+offset: 5:0:0
+
+target_fps: 30

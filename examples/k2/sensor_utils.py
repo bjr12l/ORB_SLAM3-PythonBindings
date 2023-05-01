@@ -2,7 +2,7 @@ import pandas as pd
 import cv2
 import os
 from pymap3d import geodetic2ned
-from typing import Tuple, List
+from typing import Tuple, List, Generator
 from pathlib import Path
 from functools import reduce
 from pymavlink import mavutil
@@ -70,10 +70,23 @@ def sync_logs(flight_log: pd.DataFrame, fps: int, log_offset: pd.Timedelta) -> p
     flight_log["z"] = -flight_log["z"]
     return flight_log
 
-def sync_video(vid: cv2.VideoCapture, ofset: pd.Timedelta) -> Tuple[cv2.VideoCapture, int]:
+
+def sync_video(vid: cv2.VideoCapture, offset: pd.Timedelta, target_fps: int) -> Generator:
     fps = vid.get(cv2.CAP_PROP_FPS)
-    vid.set(cv2.CAP_PROP_POS_FRAMES, int(fps * ofset.seconds))
-    return vid, fps
+    first_frames_skip_count = int(fps * offset.seconds) 
+
+    vid.set(cv2.CAP_PROP_POS_FRAMES, first_frames_skip_count)
+    frames_to_skip = int(fps // target_fps)
+
+    total_frames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+    frames_to_process = int((total_frames - first_frames_skip_count) // frames_to_skip)
+
+    for i in range(frames_to_process):
+        for _ in range(frames_to_skip - 1):
+            vid.grab()  # Read and discard the frames to be skipped
+        _, frame = vid.read()
+        yield frame
+
 
 def estimate_imu_noise(logs: pd.DataFrame):
     gyr_arr = pd.concat([logs["GyrX"], logs["GyrY"], logs["GyrZ"]]).to_numpy()
