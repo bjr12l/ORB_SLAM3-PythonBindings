@@ -20,41 +20,42 @@ File.version: "1.0"
 Camera.type: "PinHole"
 
 # Camera calibration and distortion parameters (OpenCV)
-Camera1.fx: 1533.0
-Camera1.fy: 1533.0
-Camera1.cx: 2656.0
-Camera1.cy: 1494.0
+Camera1.fx: 2339.38484
+Camera1.fy: 2378.10378
+Camera1.cx: 1312.66467
+Camera1.cy: 524.976379
 
-Camera1.k1: 0.0
-Camera1.k2: 0.0
-Camera1.p1: 0.0
-Camera1.p2: 0.0
+Camera1.k1: -0.108418654
+Camera1.k2: 0.65040909
+Camera1.p1: -0.000980865406
+Camera1.p2: -0.00764923731
+Camera1.k3: -1.69707685
 
-Camera.width: 5312
-Camera.height: 2988
+Camera.width: 1920
+Camera.height: 1080
 
-Camera.newWidth: 800
-Camera.newHeight: 450
+Camera.newWidth: 960
+Camera.newHeight: 540
 
 # Camera frames per second 
-Camera.fps: 30
+Camera.fps: 59
 
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 0
 
 # Close/Far threshold. Baseline times.
-Stereo.ThDepth: 40.0
-Stereo.b: 0.0
+# Stereo.ThDepth: 40.0
+# Stereo.b: 0.0
 
 # Depth map values factor
-RGBD.DepthMapFactor: 1.0
+# RGBD.DepthMapFactor: 1.0
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
 
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 1000
+ORBextractor.nFeatures: 500
 
 # ORB Extractor: Scale factor between levels in the scale pyramid 	
 ORBextractor.scaleFactor: 1.2
@@ -66,8 +67,8 @@ ORBextractor.nLevels: 8
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
 # You can lower these values if your images have low contrast			
-ORBextractor.iniThFAST: 20
-ORBextractor.minThFAST: 7
+ORBextractor.iniThFAST: 2
+ORBextractor.minThFAST: 1
 
 
 #--------------------------------------------------------------------------------------------
