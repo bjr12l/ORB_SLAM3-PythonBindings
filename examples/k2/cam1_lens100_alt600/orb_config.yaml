@@ -86,11 +86,11 @@ IMU.T_b_c1: !!opencv-matrix
           0.0, 0.0, 0.0, 1.0]
 
 # IMU noise (estimated using allantool)
-IMU.NoiseGyro: 0.01
-IMU.NoiseAcc: 0.1
-IMU.GyroWalk: 0.0001 
-IMU.AccWalk: 0.001
-IMU.Frequency: 30.0
+IMU.NoiseGyro: 0.115
+IMU.NoiseAcc: 1.827
+IMU.GyroWalk: 0.01 
+IMU.AccWalk: 0.3
+IMU.Frequency: 80
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters

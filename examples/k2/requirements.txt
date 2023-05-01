@@ -1,3 +1,4 @@
+allantools==2019.9
 numpy==1.24.3
 pandas==2.0.1
 pymap3d==3.0.1

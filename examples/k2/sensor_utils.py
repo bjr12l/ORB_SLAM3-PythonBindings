@@ -6,6 +6,7 @@ from typing import Tuple, List
 from pathlib import Path
 from functools import reduce
 from pymavlink import mavutil
+from allantools import adev
 
 
 SENSORS_COLUMNS = ['GyrX', 'GyrY', 'GyrZ', 'AccX', 'AccY', 'AccZ']
@@ -15,7 +16,7 @@ NAVIGATION_COLUMNS = ['Lat', 'Lng', 'Alt']
 
 def convert_logs_to_csv(logs_path: str, output_path: str) -> pd.DataFrame:
     if os.path.exists(output_path):
-        return pd.read_csv(output_path).set_index("microseconds_from_start")
+        return pd.read_csv(output_path).set_index("microseconds_from_start", drop=False)
     columns_manager = {
         'IMU': SENSORS_COLUMNS,
         'ATT': ANGLE_COLUMNS,
@@ -73,3 +74,27 @@ def sync_video(vid: cv2.VideoCapture, ofset: pd.Timedelta) -> Tuple[cv2.VideoCap
     fps = vid.get(cv2.CAP_PROP_FPS)
     vid.set(cv2.CAP_PROP_POS_FRAMES, int(fps * ofset.seconds))
     return vid, fps
+
+def estimate_imu_noise(logs: pd.DataFrame):
+    gyr_arr = pd.concat([logs["GyrX"], logs["GyrY"], logs["GyrZ"]]).to_numpy()
+    acc_arr = pd.concat([logs["AccX"], logs["AccY"], logs["AccZ"]]).to_numpy()
+
+    (tau, gyro_allan, _, _) = adev(data=gyr_arr, data_type="freq")
+    (_, accel_allan, _, _) = adev(data=acc_arr, data_type="freq")
+
+    # Approximate the IMU noise
+    IMU_NoiseGyro = gyro_allan[-1] ** 0.5  # Allan deviation at the largest tau
+    IMU_NoiseAcc = accel_allan[-1] ** 0.5  # Allan deviation at the largest tau
+
+    # Approximate the GyroWalk and AccWalk from the minimum of Allan deviation
+    IMU_GyroWalk = gyro_allan.min()
+    IMU_AccWalk = accel_allan.min()
+
+    # Approximate the IMU frequency
+    IMU_Frequency = 1 / logs["microseconds_from_start"].diff().mean() * 1e6  # microseconds to seconds
+
+    print("IMU.NoiseGyro:", IMU_NoiseGyro)
+    print("IMU.NoiseAcc:", IMU_NoiseAcc)
+    print("IMU.GyroWalk:", IMU_GyroWalk)
+    print("IMU.AccWalk:", IMU_AccWalk)
+    print("IMU.Frequency:", IMU_Frequency)
