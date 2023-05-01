@@ -20,11 +20,10 @@ File.version: "1.0"
 Camera.type: "PinHole"
 
 # Camera calibration and distortion parameters (OpenCV)
-# For now using default parameters for GoPro Hero4
-Camera1.fx: 1000.0
-Camera1.fy: 1000.0
-Camera1.cx: 1300.0
-Camera1.cy: 759.0
+Camera1.fx: 1533.0
+Camera1.fy: 1533.0
+Camera1.cx: 2656.0
+Camera1.cy: 1494.0
 
 Camera1.k1: 0.0
 Camera1.k2: 0.0
@@ -41,7 +40,14 @@ Camera.newHeight: 450
 Camera.fps: 30
 
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
-Camera.RGB: 1
+Camera.RGB: 0
+
+# Close/Far threshold. Baseline times.
+Stereo.ThDepth: 40.0
+Stereo.b: 0.0
+
+# Depth map values factor
+RGBD.DepthMapFactor: 1.0
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
@@ -50,10 +56,10 @@ Camera.RGB: 1
 # ORB Extractor: Number of features per image
 ORBextractor.nFeatures: 1000
 
-# ORB Extractor: Scale factor between levels in the scale pyramid 	
+# ORB Extractor Scale factor between levels in the scale pyramid 	
 ORBextractor.scaleFactor: 1.2
 
-# ORB Extractor: Number of levels in the scale pyramid	
+# ORB Extractor Number of levels in the scale pyramid	
 ORBextractor.nLevels: 8
 
 # ORB Extractor: Fast threshold
@@ -62,6 +68,28 @@ ORBextractor.nLevels: 8
 # You can lower these values if your images have low contrast			
 ORBextractor.iniThFAST: 20
 ORBextractor.minThFAST: 7
+
+
+#--------------------------------------------------------------------------------------------
+# IMU Parameters
+#--------------------------------------------------------------------------------------------
+
+# Transformation from camera to body-frame (imu)
+IMU.T_b_c1: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: f
+   data: [1.0, 0.0, 0.0, 0.0,
+          0.0, -1.0, 0.0, 0.0,
+          0.0, 0.0, -1.0, 0.0,
+          0.0, 0.0, 0.0, 1.0]
+
+# IMU noise (estimated using allantool)
+IMU.NoiseGyro: 0.01
+IMU.NoiseAcc: 0.1
+IMU.GyroWalk: 0.0001 
+IMU.AccWalk: 0.001
+IMU.Frequency: 30.0
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters

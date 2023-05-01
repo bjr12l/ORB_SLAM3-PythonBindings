@@ -32,6 +32,9 @@
 *.project
 *.mk
 
+# Python
+*.pyc
+
 # build folders
 build/
 data/
