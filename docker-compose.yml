@@ -10,3 +10,11 @@ services:
     volumes:
       - .:/opt/ORB_SLAM3-PythonBinding
     tty: true
+  
+  sim:
+    image: px4io/px4-dev-simulation-bionic
+    container_name: px4-simulation
+    volumes:
+      - .:/home/user/Firmware:rw
+    working_dir: /home/user/Firmware
+    command: make px4_sitl gazebo-classic_typhoon_h480__ksql_airport
