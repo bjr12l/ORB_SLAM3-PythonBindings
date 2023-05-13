@@ -1,8 +1,6 @@
 
 video_name: video_cam1_03_20_40_06-09-22_lens100_600m.mp4
-logs_bin: 
-raw_log_name: 2023-03-31 10-52-40.bin
-csv_log_name: 2023-03-31 10-52-40.csv
+log_name: 2023-03-31 10-52-40
 
 log_start: 0:0:311017
 video_start: 0:0:0

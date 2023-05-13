@@ -38,7 +38,7 @@ Camera.newWidth: 960
 Camera.newHeight: 540
 
 # Camera frames per second 
-Camera.fps: 10
+Camera.fps: 30
 
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 0
@@ -85,11 +85,11 @@ IMU.T_b_c1: !!opencv-matrix
           0.0, 0.0, 0.0, 1.0]
 
 # IMU noise (estimated using allantool)
-IMU.NoiseGyro: 0.115
-IMU.NoiseAcc: 1.827
-IMU.GyroWalk: 0.01 
-IMU.AccWalk: 0.3
-IMU.Frequency: 80
+IMU.NoiseGyro: 0.0
+IMU.NoiseAcc: 0.0
+IMU.GyroWalk: 0.0
+IMU.AccWalk: 0.0
+IMU.Frequency: 80.0
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters

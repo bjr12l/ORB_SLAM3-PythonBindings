@@ -2,7 +2,7 @@ import pandas as pd
 import cv2
 import os
 from pymap3d import geodetic2ned
-from typing import Tuple, List, Generator
+from typing import Tuple, List, Generator, Optional
 from pathlib import Path
 from functools import reduce
 from pymavlink import mavutil
@@ -14,9 +14,7 @@ ANGLE_COLUMNS = ['DesRoll', 'Roll', 'DesPitch', 'Pitch', 'DesYaw', 'Yaw']
 NAVIGATION_COLUMNS = ['Lat', 'Lng', 'Alt']
 
 
-def convert_logs_to_csv(logs_path: str, output_path: str) -> pd.DataFrame:
-    if os.path.exists(output_path):
-        return pd.read_csv(output_path).set_index("microseconds_from_start", drop=False)
+def read_mavlink_log(logs_path: str) -> pd.DataFrame:
     columns_manager = {
         'IMU': SENSORS_COLUMNS,
         'ATT': ANGLE_COLUMNS,
@@ -45,23 +43,27 @@ def convert_logs_to_csv(logs_path: str, output_path: str) -> pd.DataFrame:
 
             for column in columns_manager[message_type]:
                 data[timestamp][column] = message_data[column]
+    return pd.DataFrame(data).T
 
-    df = pd.DataFrame(data).T
-    df = df.fillna(method='ffill')
-    if output_path:
-        df.to_csv(output_path, index_label='microseconds_from_start')
-    return df
-
-def read_synced_logs(path_to_logs: Path, fps, log_start):
-    logs = pd.read_csv(path_to_logs).sort_values(by="microseconds_from_start")
+def read_logs(log_folder: Path, log_name: str, log_start: Optional[pd.Timedelta] = None, fps: Optional[int] = None):
+    raw_log_file = log_folder / f"{log_name}.bin"
+    csv_log_file = log_folder / f"{log_name}.csv"
+    if csv_log_file.exists():
+        logs = pd.read_csv(csv_log_file)
+    else:
+        logs = read_mavlink_log(raw_log_file)
+        logs.to_csv(raw_log_file, index_label='microseconds_from_start')
+    logs = logs.interpolate()
+    logs.index = pd.TimedeltaIndex(pd.to_timedelta(logs["microseconds_from_start"], unit="us"))
     logs["Alt"] -= (logs["Alt"].min() - 1)
-    logs = sync_logs(logs, fps, log_start)
-    logs["seconds_from_start"] = logs.index.total_seconds()
+    if log_start is not None:
+        logs = logs.loc[log_start:]
+    if fps is not None:
+        logs = logs.resample(f"{(1 / fps):.3f}S").mean()
+    logs = add_ned_coordinates(logs)
     return logs
 
-def sync_logs(flight_log: pd.DataFrame, fps: int, log_offset: pd.Timedelta) -> pd.DataFrame:
-    flight_log.index = pd.TimedeltaIndex(pd.to_timedelta(flight_log["microseconds_from_start"], unit="us"))
-    flight_log = flight_log.loc[log_offset:].resample(f"{(1 / fps):.3f}S").mean()
+def add_ned_coordinates(flight_log: pd.DataFrame) -> pd.DataFrame:
     start_lat, start_lng, start_alt = flight_log.iloc[0][["Lat", "Lng", "Alt"]]
     flight_log[["x", "y", "z"]] = flight_log.apply(
         lambda row: geodetic2ned(row["Lat"], row["Lng"], row["Alt"], start_lat, start_lng, start_alt),
@@ -69,7 +71,6 @@ def sync_logs(flight_log: pd.DataFrame, fps: int, log_offset: pd.Timedelta) -> p
     ).tolist()
     flight_log["z"] = -flight_log["z"]
     return flight_log
-
 
 def sync_video(vid: cv2.VideoCapture, offset: pd.Timedelta, target_fps: int) -> Generator:
     fps = vid.get(cv2.CAP_PROP_FPS)
@@ -85,7 +86,8 @@ def sync_video(vid: cv2.VideoCapture, offset: pd.Timedelta, target_fps: int) -> 
         for _ in range(frames_to_skip - 1):
             vid.grab()  # Read and discard the frames to be skipped
         _, frame = vid.read()
-        yield frame
+        timestamp = pd.Timedelta(seconds=(i * frames_to_skip) / fps)
+        yield frame, timestamp
 
 
 def estimate_imu_noise(logs: pd.DataFrame):

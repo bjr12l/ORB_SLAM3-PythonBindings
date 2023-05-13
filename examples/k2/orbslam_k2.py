@@ -2,9 +2,7 @@ import orbslam3
 import pandas as pd
 import numpy as np
 import cv2
-import yaml
 from pathlib import Path
-from tqdm import tqdm
 from typing import Tuple
 from depth_map import depth_map_from_log_and_image
 
@@ -16,41 +14,43 @@ class ORBSLAM3:
 
     new_frame_size: Tuple[float, float]
 
+    prev_timestamp: pd.Timedelta
+
     def __init__(self, path_to_vocab: Path, path_to_config: Path, sensor: orbslam3.Sensor, display: bool):
         self.slam = orbslam3.System(str(path_to_vocab), str(path_to_config), sensor)
         self.slam.set_use_viewer(display)
         self.slam.initialize()
         self.sensor = sensor
         
-        self.new_frame_size = self.get_new_camera_dim(path_to_config)
+        self.new_frame_size = self._get_new_camera_dim(path_to_config)
     
-    def step(self, frame, log):
+    def step(self, frame: np.ndarray, frame_logs: pd.DataFrame, timestamp: pd.Timedelta):
         if self.sensor == orbslam3.Sensor.MONOCULAR:
-            self.slam_step_mono(frame, log)
+            self._slam_step_mono(frame, timestamp)
+        elif self.sensor == orbslam3.Sensor.IMU_MONOCULAR:
+            self._slam_step_mono_imu(frame, timestamp, frame_logs)
         elif self.sensor == orbslam3.Sensor.RGBD:
-            self.slam_step_rgbd(frame, log)
+            self._slam_step_rgbd(frame, timestamp, frame_logs)
         else:
             raise NotImplementedError(f"Sensor {self.sensor} not supported yet")
     
-    def slam_step_mono(self, frame, log):
-        self.slam.process_image_mono(frame, log["seconds_from_start"], "")
+    def _slam_step_mono(self, frame: np.ndarray, timestamp: pd.Timedelta):
+        self.slam.process_image_mono(frame, timestamp.total_seconds(), "")
 
-    def slam_step_mono_imu(self, frame, log):
-        log_array = log[
-            ['AccX', 'AccY', 'AccZ', 'GyrX', 'GyrY', 'GyrZ', 'seconds_from_start']
-        ].to_numpy(dtype=np.float32).reshape(1, -1)
-        self.slam.process_image_imu_mono(frame, log["seconds_from_start"], "")
+    def _slam_step_mono_imu(self, frame: np.ndarray, timestamp: pd.Timedelta, frame_logs: pd.DataFrame):
+        imu_data = frame_logs[['AccX', 'AccY', 'AccZ', 'GyrX', 'GyrY', 'GyrZ', "timestamp"]].values
+        self.slam.process_image_imu_mono(frame, timestamp.total_seconds(), "", imu_data)
 
-    def slam_step_rgbd(self, frame, log):
+    def _slam_step_rgbd(self, frame: np.ndarray, timestamp: pd.Timedelta, logs: pd.DataFrame):
         frame = cv2.resize(frame, self.new_frame_size)
         if intrinsic_matrix is None:
-            depth_map = np.full((frame.shape[0], frame.shape[1]), log["z"])
+            depth_map = np.full((frame.shape[0], frame.shape[1]), logs["z"])
             intrinsic_matrix = self.slam.get_camera_matrix()
         else: 
-            depth_map = depth_map_from_log_and_image(frame, log, intrinsic_matrix)
-        self.slam.process_image_rgbd(frame, depth_map, log["seconds_from_start"])
+            depth_map = depth_map_from_log_and_image(frame, logs, intrinsic_matrix)
+        self.slam.process_image_rgbd(frame, depth_map, timestamp)
 
-    def slam_step_rgbd_imu():
+    def _slam_step_rgbd_imu():
         ...
 
     def get_trajectory_df(self) -> pd.DataFrame:
@@ -68,7 +68,7 @@ class ORBSLAM3:
         return predicted_pos
 
     @staticmethod
-    def get_new_camera_dim(path_to_config: Path) -> Tuple[int, int]:
+    def _get_new_camera_dim(path_to_config: Path) -> Tuple[int, int]:
         new_width = new_height = None
         with open(path_to_config, "r") as f:
             for line in f:

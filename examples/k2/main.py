@@ -5,6 +5,9 @@ import pandas as pd
 import orbslam3
 from tqdm import tqdm
 
+from orbslam_k2 import ORBSLAM3
+from sensor_utils import sync_video, read_logs
+
 PROJECT_DIR = Path("..") / ".."
 VOCABLUARY_PATH = PROJECT_DIR / "Vocabluary" / "ORBvoc.txt"
 
@@ -13,9 +16,6 @@ CONFIG_PATH = VIDEO_FOLDER / "config.yaml"
 ORB_CONFIG_PATH = VIDEO_FOLDER / "orb_config.yaml"
 
 DATA_DIR = PROJECT_DIR / "data" / "k2" / VIDEO_FOLDER
-
-from orbslam_k2 import ORBSLAM3
-from sensor_utils import sync_video, read_synced_logs, convert_logs_to_csv
 
 def timedelta_from_string(timestamp_str: str) -> pd.Timedelta:
     minutes, seconds, milliseconds = timestamp_str.split(":")
@@ -52,13 +52,17 @@ if __name__ == "__main__":
     vid = cv2.VideoCapture(str(DATA_DIR / config["video_name"]))
     vid = sync_video(vid, video_start, target_fps)
 
-    logs = read_synced_logs(DATA_DIR / config["csv_log_name"], target_fps, log_start)
+    logs = read_logs(DATA_DIR, config["log_name"], log_start=log_start)
+    logs.index -= logs.index[0]
+    logs["timestamp"] = (logs.index.total_seconds()).astype(int)
 
-    slam = ORBSLAM3(str(VOCABLUARY_PATH), str(ORB_CONFIG_PATH), orbslam3.Sensor.MONOCULAR, True)
+    slam = ORBSLAM3(str(VOCABLUARY_PATH), str(ORB_CONFIG_PATH), orbslam3.Sensor.IMU_MONOCULAR, True)
 
+    prev_timestamp = pd.Timedelta(seconds=0)
     for i in tqdm(range(5000)):
-        frame = next(vid)
+        frame, timestamp = next(vid)
         frame = cv2.resize(frame, slam.new_frame_size)
-        log = logs.iloc[i]
-        display_frame_with_log(frame, log)
-        slam.step(frame, log)
+        frame_log = logs.loc[prev_timestamp:timestamp]
+        display_frame_with_log(frame, logs.loc[prev_timestamp:].iloc[0])
+        slam.step(frame, frame_log, timestamp)
+        prev_timestamp = timestamp
