@@ -51,7 +51,8 @@ def read_logs(log_folder: Path, log_name: str, log_start: Optional[pd.Timedelta]
     if csv_log_file.exists():
         logs = pd.read_csv(csv_log_file)
     else:
-        logs = read_mavlink_log(raw_log_file)
+        logs = read_mavlink_log(str(raw_log_file))
+        return logs
         logs.to_csv(raw_log_file, index_label='microseconds_from_start')
     logs = logs.interpolate()
     logs.index = pd.TimedeltaIndex(pd.to_timedelta(logs["microseconds_from_start"], unit="us"))
@@ -74,6 +75,7 @@ def add_ned_coordinates(flight_log: pd.DataFrame) -> pd.DataFrame:
 
 def sync_video(vid: cv2.VideoCapture, offset: pd.Timedelta, target_fps: int) -> Generator:
     fps = vid.get(cv2.CAP_PROP_FPS)
+    print(f"Source FPS: {fps}")
     first_frames_skip_count = int(fps * offset.seconds) 
 
     vid.set(cv2.CAP_PROP_POS_FRAMES, first_frames_skip_count)

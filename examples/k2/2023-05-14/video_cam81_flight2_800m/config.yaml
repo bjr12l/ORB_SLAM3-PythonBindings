@@ -1,0 +1,9 @@
+
+video_name: video_cam81_flight2_800m.mp4
+log_name: flight2_logs
+
+log_start: 31:42:0
+video_start: 6:0:0
+offset: 0:0:0
+
+target_fps: 14

@@ -5,7 +5,7 @@ pymap3d==3.0.1
 matplotlib==3.7.1
 scipy==1.10.1
 tqdm==4.65.0
-jupyter-lab
+jupyterlab
 PyYAML==6.0
 pymavlink==2.4.38
 
