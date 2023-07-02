@@ -11,11 +11,11 @@ from sensor_utils import sync_video, read_logs
 PROJECT_DIR = Path("..") / ".."
 VOCABLUARY_PATH = PROJECT_DIR / "Vocabluary" / "ORBvoc.txt"
 
-CONFIG_FOLDER = Path("2023-05-14") / "video_cam81_flight2_800m"
+CONFIG_FOLDER = Path("copter_flir") # Path("day7") / "video_cam0_13_00_34_02-03-23_flight2"
 CONFIG_PATH = CONFIG_FOLDER / "config.yaml"
 ORB_CONFIG_PATH = CONFIG_FOLDER / "orb_config.yaml"
 
-DATA_DIR = PROJECT_DIR / "data" / "2023-05-14"
+DATA_DIR = PROJECT_DIR / "data" / "copter_flir" # "day7"
 
 def timedelta_from_string(timestamp_str: str) -> pd.Timedelta:
     minutes, seconds, milliseconds = timestamp_str.split(":")
@@ -43,8 +43,8 @@ if __name__ == "__main__":
         config = yaml.load(f, Loader=yaml.BaseLoader)
     
     offset = timedelta_from_string(config["offset"])
-    log_start = timedelta_from_string(config["log_start"]) + offset
-    video_start = timedelta_from_string(config["video_start"]) + offset
+    log_start = timedelta_from_string(config.get("log_start", "0:0:0")) + offset
+    video_start = timedelta_from_string(config.get("video_start", "0:0:0")) + offset
 
     target_fps = int(config["target_fps"])
 
@@ -60,10 +60,10 @@ if __name__ == "__main__":
     slam = ORBSLAM3(str(VOCABLUARY_PATH), str(ORB_CONFIG_PATH), orbslam3.Sensor.MONOCULAR, True)
 
     prev_timestamp = pd.Timedelta(seconds=0)
-    for i in tqdm(range(5000)):
+    for i in tqdm(range(20000)):
         frame, timestamp = next(vid)
         frame = cv2.resize(frame, slam.new_frame_size)
         # frame_log = logs.loc[prev_timestamp:timestamp]
-        display_frame_with_log(frame, None)# logs.loc[prev_timestamp:].iloc[0])
+        display_frame_with_log(frame, None) # logs.loc[prev_timestamp:].iloc[0])
         slam.step(frame, None, timestamp)
         prev_timestamp = timestamp
