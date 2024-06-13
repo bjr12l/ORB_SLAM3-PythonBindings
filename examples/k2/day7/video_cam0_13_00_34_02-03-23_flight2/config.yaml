@@ -1,0 +1,9 @@
+
+video_name: video_cam0_13_00_34_02-03-23_flight2.mp4
+log_name: day7_flight2.bin
+
+log_start: 0:0:0
+video_start: 10:10:0
+offset: 0:0:0
+
+target_fps: 5

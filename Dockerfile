@@ -1,8 +1,7 @@
 FROM orb-slam3:dev
 
-RUN apt update && apt install -y wget && \
-    apt install -y python3 python3-dev python3-pip && \
-	pip3 install Cython && pip3 install numpy pandas
+RUN apt update && apt install -y wget git && \
+    apt install -y python3 python3-dev python3-pip python3-numpy
 
 RUN cd /opt && \
     wget https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.gz && \
